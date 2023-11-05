@@ -52,7 +52,7 @@ module block_tb;
         // Start computation
         compute = 1;
         #(10);
-        inp_west = 32'd7;
+        inp_west = 32'd3;
         inp_north = 32'd5;  // Load a sample partial sum
 
         // Continue the simulation for several cycles to observe behavior

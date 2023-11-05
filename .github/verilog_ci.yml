@@ -12,9 +12,9 @@ jobs:
     - name: Setup Icarus Verilog
       run: sudo apt-get update && sudo apt-get install -y iverilog
     
-    - name: Compile Verilog Code
+    - name: Test Verilog Code
       run: |
-        iverilog -o output_name.vvp -I src/ tb/block_tb.v
+        make test
     
     - name: Run Tests
       run: vvp output_name.vvp
