@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1700326486" />
+    <testcase name="systolic_array_test" classname="test_systolic_array" file="/Users/kirillkalashnikov/Desktop/programming/Accelerator/Verilog/WeightStationary/tests/test_systolic_array.py" lineno="6" time="0.009596824645996094" sim_time_ns="340.001" ratio_time="35428.48937454039" />
+  </testsuite>
+</testsuites>
