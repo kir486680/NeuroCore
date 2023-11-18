@@ -17,8 +17,8 @@ module block(inp_north, inp_west, weight_in, outp_south, outp_east,  clk, rst, c
     );
     wire [31:0] add_result;
     fadd add_instance (
-        .a_operand(inp_north),
-        .b_operand(mul_result),
+        .a_in(inp_north),
+        .b_in(mul_result),
         .result(add_result)
     );
 

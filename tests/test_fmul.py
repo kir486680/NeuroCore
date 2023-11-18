@@ -14,7 +14,7 @@ async def fmul_tb(dut):
     dut.b_in.value = 0
 
     # Wait 100 ns for global reset to finish
-    await Timer(100, units='ns')
+    await Timer(10, units='ns')
 
     # Apply test cases
     dut.a_in.value = BinaryValue("01000000110000000000000000000000")  # Replace with actual test data
