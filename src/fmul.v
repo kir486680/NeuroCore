@@ -1,4 +1,4 @@
-//basically a close copy of 
+//basically a close copy of https://github.com/ReaLLMASIC/nanoGPT/blob/master/HW/SA/verilog/fmul.sv
 
 
 module fmul(
