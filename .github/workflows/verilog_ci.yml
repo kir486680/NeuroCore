@@ -16,5 +16,3 @@ jobs:
       run: |
         make test
     
-    - name: Run Tests
-      run: vvp output_name.vvp
