@@ -70,7 +70,7 @@ module block_tb;
     end
 
     initial begin
-        $dumpfile("wave.vcd");
+        $dumpfile("block_wave.vcd");
         $dumpvars(0, block_tb);
     end
     

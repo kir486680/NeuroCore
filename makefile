@@ -23,7 +23,7 @@ all: $(TARGETS)
 #The $@ is the target, which is the VVP file
 $(BUILD_DIR)/%.vvp: $(TB_DIR)/%_tb.v $(SRCS)
 	@mkdir -p $(BUILD_DIR)
-	iverilog -o $@ $^
+	iverilog -o $@ $^/block.v
 
 # Rule to run all simulations. 
 test: $(TARGETS)

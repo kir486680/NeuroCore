@@ -8,6 +8,21 @@ module block(inp_north, inp_west, weight_in, outp_south, outp_east,  clk, rst, c
     output reg [31:0] outp_south, outp_east;
     input clk, rst, compute, weight_en;
     
+    // Instantiate fmul module
+    wire [31:0] mul_result;
+    fmul mul_instance (
+        .a_in(inp_west),
+        .b_in(weight),
+        .result(mul_result)
+    );
+    wire [31:0] add_result;
+    fadd add_instance (
+        .a_operand(inp_north),
+        .b_operand(mul_result),
+        .result(add_result)
+    );
+
+
     always @(posedge rst or posedge clk) begin
         if(rst) begin
             outp_east <= 0;
@@ -20,7 +35,8 @@ module block(inp_north, inp_west, weight_in, outp_south, outp_east,  clk, rst, c
             end
             if (compute) begin
                 outp_east <= inp_west;
-                outp_south <= inp_north + (inp_west * weight);
+               // outp_south <= inp_north + inp_west * weight;
+                outp_south <= add_result;
             end
         end 
     end
