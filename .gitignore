@@ -1,6 +1,9 @@
 *.vcd
 *.vvp
 *.DS_Store
+**/results.xml
+**/sim_build/
+**/build/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
