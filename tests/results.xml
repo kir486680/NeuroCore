@@ -1,6 +1,0 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1700273223" />
-    <testcase name="fmul_tb" classname="test_fmul" file="/Users/kirillkalashnikov/Desktop/programming/Accelerator/Verilog/WeightStationary/tests/test_fmul.py" lineno="5" time="0.004984855651855469" sim_time_ns="110.001" ratio_time="22067.038181748612" />
-  </testsuite>
-</testsuites>
