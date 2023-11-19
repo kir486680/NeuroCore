@@ -4,3 +4,9 @@
 `define BIT_W 32
 `define MULT_W `M_W+`M_W+2
 `define EXP_MAX 2**(`EXP_W-1)+2**(`EXP_W)-3
+`define PE_W 3
+`define PE_H 3
+`define A_M 2
+`define A_P 5 
+`define B_P 5 
+`define B_N 2
