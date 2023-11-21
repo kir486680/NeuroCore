@@ -9,7 +9,7 @@ all: env test
 # Create a virtual environment
 env:
 	@test -d $(VENV_NAME) || virtualenv -p $(PYTHON) $(VENV_NAME)
-	@$(VENV_ACTIVATE) && pip install cocotb
+	@$(VENV_ACTIVATE) && pip install -r requirements.txt
 
 # Run Cocotb tests
 test: env
