@@ -4,6 +4,7 @@ SIM ?= icarus
 
 # Verilog source files
 VERILOG_SOURCES = ../src/define.v \
+                  ../src/get_block.v\
                   ../src/block_multiply.v \
                   ../src/fadd.v \
                   ../src/fmul.v \
@@ -12,8 +13,8 @@ VERILOG_SOURCES = ../src/define.v \
 
 # You will have to create separate test rules for each module
 TOPLEVEL_LANG = verilog
-TOPLEVEL = block_multiply
-MODULE = test_block_multiply
+TOPLEVEL = get_block
+MODULE = test_get_block
 
 
 include $(shell cocotb-config --makefiles)/Makefile.sim

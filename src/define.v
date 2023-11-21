@@ -6,7 +6,12 @@
 `define EXP_MAX 2**(`EXP_W-1)+2**(`EXP_W)-3
 `define PE_W 3
 `define PE_H 3
-`define A_M 2
-`define A_P 5 
-`define B_P 5 
-`define B_N 2
+
+
+`define DATA_W 16
+`define A_M 2 // dimension 0 of A matrix
+`define A_P 5  // dimension 1 of A matrix
+`define B_P 5 // dimension 0 of B matrix
+`define B_N 2 // dimension 1 of B matrix
+`define J 2 //row max dim of the systolic mlutiplier 
+`define K 2 //col max dim of the systolic mlutiplier
