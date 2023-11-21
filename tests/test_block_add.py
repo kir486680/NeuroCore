@@ -30,7 +30,7 @@ async def test_get_block(dut):
     # Define the start row and column for the block to be read
     start_row = 0
     start_col = 0
-    num_col = 4
+    num_col = 5
     dut.start_row.value = start_row
     dut.start_col.value = start_col
     dut.num_cols.value = num_col
@@ -39,7 +39,7 @@ async def test_get_block(dut):
     print_matrix(dut.multiplied_block, J, K, "multiplied_block")
     print_matrix(dut.buffer_temp, buffer_size/buffer_row_len, buffer_row_len, "buffer_temp")
     await RisingEdge(dut.clk)
-    print_matrix(dut.buffer_result, buffer_size/buffer_row_len, buffer_row_len, "added result")
+    print_matrix(dut.buffer_result, 2, 5, "added result")
     # Check the block values
     for i in range(buffer_size):
         pass
