@@ -1,11 +1,11 @@
 `define DIMENSION 4
-`define M_W 23
-`define EXP_W 8
-`define BIT_W 32
+`define M_W 10
+`define EXP_W 5
+`define BIT_W 16
 `define MULT_W `M_W+`M_W+2
 `define EXP_MAX 2**(`EXP_W-1)+2**(`EXP_W)-3
-`define PE_W 3
-`define PE_H 3
+`define PE_W 4
+`define PE_H 4
 
 
 `define DATA_W 16
