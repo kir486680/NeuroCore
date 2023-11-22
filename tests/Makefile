@@ -8,7 +8,7 @@ VERILOG_SOURCES = ../src/define.v \
                   ../src/fmul.v \
                   ../src/block_get.v \
                   ../src/block_add.v \
-                  ../src/block_multiply.v \
+                  ../src/main.v \
                   ../src/block.v \
                   ../src/systolic_array.v
 

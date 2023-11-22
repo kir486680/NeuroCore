@@ -1,11 +1,12 @@
 module block_get(
     input clk,
     input rst,
+    input start,
     input [9:0] start_row,
     input [9:0] start_col,
     input [9:0] num_cols,
     input [9:0] matrix_len,
-    input [`DATA_W-1:0] buffer[0:15], // Define the size properly
+    input [`DATA_W-1:0] buffer[0:15], // the original matrix
     output reg [`DATA_W-1:0] block[0:`J*`K-1] // Use parameter to define J, K and DATA_W
 );
 
@@ -19,7 +20,7 @@ always @(posedge clk or posedge rst) begin
         for (i = 0; i < J*K; i = i + 1) begin
             block[i] <= 0;
         end
-    end else begin
+    end else if(start) begin
         for (i = 0; i < J; i = i + 1) begin
             for (j = 0; j < K; j = j + 1) begin
                 if(start_row + i < matrix_len / num_cols && start_col + j < num_cols) begin

@@ -1,6 +1,7 @@
 module block_add(
     input clk, 
     input rst,
+    input start,
     input [9:0] start_row,
     input [9:0] start_col,
     input [9:0] num_cols,
@@ -24,7 +25,7 @@ generate
             always @(posedge clk or posedge rst) begin
                 if (rst) begin
                     buffer_result[start_row * num_cols + start_col + i * num_cols + j] <= 0;
-                end else begin
+                end else if(start) begin
                     // Check if the result indices are within the matrix dimensions
                     if ((start_row + i) < `A_M && (start_col + j) < `B_N) begin
                         buffer_result[start_row * num_cols + start_col + i * num_cols + j] <= fadd_result;
