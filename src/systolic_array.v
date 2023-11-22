@@ -1,16 +1,16 @@
 
 module systolic_array(
-    input [15:0] inp_west0, inp_west3, inp_west6,
-    input [15:0] inp_weight0, inp_weight1, inp_weight2, inp_weight3,
+    input [`DATA_W:0] inp_west0, inp_west3, inp_west6,
+    input [`DATA_W:0] inp_weight0, inp_weight1, inp_weight2, inp_weight3,
                   inp_weight4, inp_weight5, inp_weight6, inp_weight7, inp_weight8,
     input clk, rst, compute, weight_en
 );
 
 
-    wire [15:0] outp_south0, outp_south1, outp_south2,
+    wire [`DATA_W:0] outp_south0, outp_south1, outp_south2,
                 outp_south3, outp_south4, outp_south5,
                 outp_south6, outp_south7, outp_south8;
-    wire [15:0] outp_east0, outp_east1, outp_east2,
+    wire [`DATA_W:0] outp_east0, outp_east1, outp_east2,
                 outp_east3, outp_east4, outp_east5,
                 outp_east6, outp_east7, outp_east8;
 
@@ -21,9 +21,9 @@ module systolic_array(
     // reg[15:0] buffer_3[0:PE_W+3];
 
     //First row of the array 
-    block P0 (15'd0,inp_west0, inp_weight0, outp_south0, outp_east0,clk, rst, compute, weight_en);
-    block P1 (15'd0,outp_east0, inp_weight1, outp_south1, outp_east1,clk, rst, compute, weight_en);
-    block P2 (15'd0,outp_east1, inp_weight2, outp_south2, outp_east2,clk, rst, compute, weight_en);
+    block P0 (`DATA_W'd0,inp_west0, inp_weight0, outp_south0, outp_east0,clk, rst, compute, weight_en);
+    block P1 (`DATA_W'd0,outp_east0, inp_weight1, outp_south1, outp_east1,clk, rst, compute, weight_en);
+    block P2 (`DATA_W'd0,outp_east1, inp_weight2, outp_south2, outp_east2,clk, rst, compute, weight_en);
 
     //Second row of the array
     block P3(outp_south0,inp_west3, inp_weight3, outp_south3, outp_east3,clk, rst, compute, weight_en);

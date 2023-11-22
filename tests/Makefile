@@ -14,8 +14,8 @@ VERILOG_SOURCES = ../src/define.v \
 
 # You will have to create separate test rules for each module
 TOPLEVEL_LANG = verilog
-TOPLEVEL = block_add
-MODULE = test_block_add
+TOPLEVEL = block_get
+MODULE = test_block_get
 
 
 include $(shell cocotb-config --makefiles)/Makefile.sim

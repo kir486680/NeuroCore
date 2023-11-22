@@ -1,5 +1,5 @@
 module block_multiply(
-    input [15:0] inp_a, inp_b,
+    input [`BIT_W-1:0] inp_a, inp_b,
     input load_enable,
     input clk,
     input rst,
@@ -8,11 +8,11 @@ module block_multiply(
 );
 
 
-reg[15:0] buffer_A[0:9];
+reg[`BIT_W-1:0] buffer_A[0:9];
 reg[3:0] buffer_A_cnt;
-reg[15:0] buffer_B[0:9];
+reg[`BIT_W-1:0] buffer_B[0:9];
 reg[3:0] buffer_B_cnt;
-reg[15:0] buffer_result[0:9];
+reg[`BIT_W-1:0] buffer_result[0:9];
 
 //State Machine Declaration 
 reg [3:0] state;
@@ -25,8 +25,6 @@ localparam  IDLE = 4'd0,
 //TODO: instantiate the systolic array multiplier
 
 
-//Variables for block matrix splitting
-reg [3:0] i, j, k;
 
 //State Machine Logic 
 always @(posedge clk) begin
