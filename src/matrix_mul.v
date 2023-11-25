@@ -20,9 +20,15 @@ localparam IDLE        = 3'd0,
            DONE        = 3'd6;
 
 reg [2:0] state, next_state;
-reg [9:0] i, l, r, result_row, result_col;
+reg [9:0] i, l, r, result_row, result_col; // this is for the loop counters
 reg [`DATA_W-1:0] block[0:`J*`K-1] block_a;
 reg [`DATA_W-1:0] block[0:`J*`K-1] block_b;
+
+// Signals to indicate the completion of operations
+wire block_get_a_done;
+wire block_get_b_done;
+wire block_multiply_done;
+wire block_add_done;
 
 block_get block_get_A(
     .clk(clk),
@@ -33,7 +39,8 @@ block_get block_get_A(
     .num_cols(`A_P),
     .matrix_len(`A_M*`A_N),
     .buffer(matrix_A),
-    .block(block_a)
+    .block(block_a),
+    .block_get_done(block_get_a_done)
 );
 
 block_get block_get_B(
@@ -45,7 +52,8 @@ block_get block_get_B(
     .num_cols(`B_N),
     .matrix_len(`B_N*`B_P),
     .buffer(matrix_B),
-    .block(block_b)
+    .block(block_b),
+    .block_get_done(block_get_b_done)
 );
 
 block_add block_add(
@@ -57,7 +65,8 @@ block_add block_add(
     .num_cols(`B_N),
     .multiplied_block(block_b),
     .buffer_temp(block_a),
-    .buffer_result(matrix_C)
+    .buffer_result(matrix_C),
+    .block_add_done(block_add_done)
 );
 
 // State transition logic
@@ -78,7 +87,7 @@ always @(*) begin
         end
         GET_BLOCK_A: begin
             // Assume a condition or a signal that indicates the block is ready
-            if () begin
+            if (block_get_a_done) begin
                 // We've reached the end of the matrix A
                 current_row = 10'd0;
                 current_col = 10'd0;
@@ -89,7 +98,7 @@ always @(*) begin
             //(current_row + `J) > `A_M && (current_col + `K ) > `A_P
         end
         GET_BLOCK_B: begin
-            if () begin
+            if (block_get_b_done) begin
                 next_state = MULTIPLY_BLOCK;
             end else begin
                 next_state = GET_BLOCK_B;
@@ -97,7 +106,7 @@ always @(*) begin
             //(current_row + `J) > `B_P && (current_col + `K ) > `B_N
         end
         MULTIPLY_BLOCK: begin
-            if (/* multiplication done */) begin
+            if (block_multiply_done) begin
                 next_state = ADD_BLOCK;
             end else begin
                 next_state = MULTIPLY_BLOCK;
@@ -106,7 +115,7 @@ always @(*) begin
         ACCUMULATE: begin
             // Accumulate result
             // Update loop counters and check loop conditions
-            if (/* accumulation complete */) begin
+            if (block_add_done) begin
                 // Check if we're done with all loops
                 if (r >= p) begin
                     if (l >= n) begin
@@ -120,7 +129,7 @@ always @(*) begin
                         l = l + `K;
                         next_state = GET_BLOCK_A;
                     end
-                    ;
+                    
                 end else begin
                     r = r + `K;
                     next_state = GET_BLOCK_A; 
@@ -159,10 +168,11 @@ always @(posedge clk or posedge rst) begin
     end else begin 
         case(state)
         GET_BLOCK_A: begin
-            get_block_a = 1'b1;
+            get_block_a <= 1'b1;
+
         end
         GET_BLOCK_B: begin
-            get_block_b = 1'b1;
+            get_block_b <= 1'b1;
         end
         ACCUMULATE: begin
         end

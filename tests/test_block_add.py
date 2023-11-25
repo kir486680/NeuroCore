@@ -30,23 +30,26 @@ async def test_get_block(dut):
     # Define the start row and column for the block to be read
     start_row = 0
     start_col = 0
-    num_col = 5
     dut.start_row.value = start_row
     dut.start_col.value = start_col
-    dut.num_cols.value = num_col
+    dut.start.value = 1
     #this is important. Need to wait for two clock cycles before reading the block. If only use one, the result gonna be xxxxx..
     await RisingEdge(dut.clk)
+    dut.start.value = 0
+    print("Done", dut.block_add_done.value)
     print_matrix(dut.multiplied_block, J, K, "multiplied_block")
     print_matrix(dut.buffer_temp, buffer_size/buffer_row_len, buffer_row_len, "buffer_temp")
     await RisingEdge(dut.clk)
+    print("Done", dut.block_add_done.value)
     print_matrix(dut.buffer_result, 2, 5, "added result")
+    await RisingEdge(dut.clk)
+    print("Done", dut.block_add_done.value)
+
     # Check the block values
-    for i in range(buffer_size):
-        pass
-            #print(dut.buffer_result[i].value)
-            # original_val_idx = (start_row + i) * num_col + start_col + j
-            # original_val = dut.buffer[original_val_idx].value
-            # block_val_idx = i * K + j
-            # block_val = dut.block[block_val_idx].value
-            # assert block_val == original_val
-            # print(dut.block[i * J + j].value)
+    # for i in range(buffer_size):
+    #     print(dut.buffer_result[i].value)
+    #     original_val_idx = (start_row + i) * num_col + start_col + j
+    #     original_val = dut.buffer[original_val_idx].value
+    #     block_val_idx = i * K + j
+    #     block_val = dut.block[block_val_idx].value
+    #     assert block_val == original_val

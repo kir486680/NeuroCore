@@ -34,10 +34,12 @@ async def test_get_block(dut):
     #this is important. Need to wait for two clock cycles before reading the block. If only use one, the result gonna be xxxxx..
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
-    #lets not print the data in the buffer 
+    dut.start.value = 0
+    #lets now print the data in the buffer 
     print_matrix(dut.buffer, 2, 5, "Buffer after initialization")
-
     print_matrix(dut.block, J, K, "Block")
+    print("Done", dut.block_get_done.value)
+    await RisingEdge(dut.clk)
     
     # Check the block values
     for i in range(J):
@@ -47,6 +49,7 @@ async def test_get_block(dut):
             block_val_idx = i * K + j
             block_val = dut.block[block_val_idx].value
             assert block_val == original_val
-
-    
+    dut.start.value = 0
+    await RisingEdge(dut.clk)
+    print("Done", dut.block_get_done.value)
             
