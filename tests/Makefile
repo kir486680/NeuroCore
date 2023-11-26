@@ -10,13 +10,15 @@ VERILOG_SOURCES = ../src/define.v \
                   ../src/block_add.v \
                   ../src/main.v \
                   ../src/block.v \
-                  ../src/systolic_array.v
+                  ../src/systolic_array.v\
+                  ../src/matrix_mul.v
 
 # You will have to create separate test rules for each module
 TOPLEVEL_LANG = verilog
-TOPLEVEL = block_get 
-MODULE = test_block_get 
-
+#TOPLEVEL = block_get
+#MODULE = test_block_get
+TOPLEVEL = matrix_mul
+MODULE = test_matrix_mul
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 

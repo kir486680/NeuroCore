@@ -3,6 +3,7 @@ from cocotb.triggers import RisingEdge
 from cocotb.binary import BinaryValue
 from utils import float_to_float16, print_matrix
 from cocotb.clock import Clock
+
 @cocotb.test()
 async def test_get_block(dut):
     # Set up the initial conditions

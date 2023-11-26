@@ -6,7 +6,7 @@ module block_get(
     input [9:0] start_col,
     input [9:0] num_cols,
     input [9:0] matrix_len,
-    input [`DATA_W-1:0] buffer[0:15], // the original matrix
+    input [`DATA_W-1:0] buffer[0:9], // the original matrix
     output reg [`DATA_W-1:0] block[0:`J*`K-1], // Use parameter to define J, K and DATA_W
     output reg block_get_done // Indicates when block get is complete
 );
@@ -21,7 +21,7 @@ integer i, j;
 
 // Combinational logic for block_get_done
 always @(*) begin
-    if (rst || start) begin
+    if (rst) begin
         block_get_done = 1'b0;
     end else if (&get_complete) begin
         block_get_done = 1'b1;
@@ -40,7 +40,7 @@ always @(posedge clk or posedge rst) begin
     end else if(start) begin
         for (i = 0; i < J; i = i + 1) begin
             for (j = 0; j < K; j = j + 1) begin
-                if(start_row + i < matrix_len / num_cols && start_col + j < num_cols) begin
+                if(start_row + i < (matrix_len / num_cols) && start_col + j < num_cols) begin
                     block[i*K + j] <= buffer[(start_row + i)*num_cols + (start_col + j)];
                     get_complete[i*K + j] <= 1'b1; // Mark element as read
                 end else begin
