@@ -13,16 +13,16 @@ module block_add(
 // Internal signal to keep track of addition completion for each element
 reg [`J*`K-1:0] addition_complete;
 
-
 // Combinational logic for block_add_done
 always @(*) begin
-    if (rst || start) begin
-        // Reset the block_add_done when reset or a new start is signaled
+    if (rst) begin
+        // Reset block_add_done only on reset
         block_add_done = 1'b0;
     end else if (&addition_complete) begin
-        // If all additions are complete, set block_add_done high
+        // Set block_add_done high when all additions are complete
         block_add_done = 1'b1;
     end else begin
+        // Keep block_add_done low otherwise
         block_add_done = 1'b0;
     end
 end
@@ -38,36 +38,25 @@ generate
                 .b_in(multiplied_block[i * `K + j]),
                 .result(fadd_result)
             );
-            
-            // Use non-blocking assignment inside always block to assign the result to buffer_result
-            always @(posedge clk or posedge rst) begin
+
+            // Combinational logic for assigning results to buffer_result
+            always @(*) begin
                 if (rst) begin
-                    buffer_result[((start_row + i) * `B_N) + start_col + j] <= 0;
-                    addition_complete[i * `K + j] <= 0;
+                    buffer_result[((start_row + i) * `B_N) + start_col + j] = 0;
+                    addition_complete[i * `K + j] = 0;
                 end else if(start) begin
-                    // Check if the result indices are within the matrix dimensions
                     if ((start_row + i) < `A_M && (start_col + j) < `B_N) begin
-                        buffer_result[((start_row + i) * `B_N) + start_col + j] <= fadd_result;
-                        addition_complete[i * `K + j] <= 1'b1;
+                        buffer_result[((start_row + i) * `B_N) + start_col + j] = fadd_result;
+                        addition_complete[i * `K + j] = 1'b1;
+                    end else begin
+                        addition_complete[i * `K + j] = 1'b0;
                     end
+                end else begin
+                    // No action if not reset or start
                 end
             end
         end
     end
 endgenerate
-
-// Sequential logic for handling addition_complete
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        addition_complete <= `J*`K'd0; // Reset the addition_complete flags
-    end else if (start) begin
-        // When a new addition starts, reset the addition_complete flags
-        addition_complete <= `J*`K'd0;
-    end else begin
-        // Logic to update addition_complete flags based on the completion of each fadd operation
-        // ...
-    end
-end
-
 
 endmodule

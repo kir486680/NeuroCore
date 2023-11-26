@@ -14,43 +14,34 @@ module block_get(
 parameter J = `J; // Define the block rows
 parameter K = `K; // Define the block columns
 
-// Signal to count the number of elements read
 reg [`J*`K-1:0] get_complete;
 
 integer i, j;
 
-// Combinational logic for block_get_done
+// Combinational logic for block_get_done and block assignment
 always @(*) begin
     if (rst) begin
         block_get_done = 1'b0;
-    end else if (&get_complete) begin
-        block_get_done = 1'b1;
-    end else begin
-        block_get_done = 1'b0;
-    end
-end
-
-// Sequential logic for reading the block and updating get_complete
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
         for (i = 0; i < J*K; i = i + 1) begin
-            block[i] <= 0;
-            get_complete[i] <= 1'b0;
+            block[i] = 0;
+            get_complete[i] = 1'b0;
         end
-    end else if(start) begin
+    end else if (start) begin
+        block_get_done = 1'b0;
         for (i = 0; i < J; i = i + 1) begin
             for (j = 0; j < K; j = j + 1) begin
-                if(start_row + i < (matrix_len / num_cols) && start_col + j < num_cols) begin
-                    block[i*K + j] <= buffer[(start_row + i)*num_cols + (start_col + j)];
-                    get_complete[i*K + j] <= 1'b1; // Mark element as read
+                if (start_row + i < (matrix_len / num_cols) && start_col + j < num_cols) begin
+                    block[i*K + j] = buffer[(start_row + i)*num_cols + (start_col + j)];
+                    get_complete[i*K + j] = 1'b1;
                 end else begin
-                    get_complete[i*K + j] <= 1'b1; // We still need to count these
+                    get_complete[i*K + j] = 1'b1;
                 end
             end
         end
+        block_get_done = &get_complete;
     end else begin
         for (i = 0; i < J*K; i = i + 1) begin
-            get_complete[i] <= 1'b0; // Reset the get_complete flags
+            get_complete[i] = 1'b0;
         end
     end
 end

@@ -12,12 +12,11 @@ module matrix_mul(
 
 // Define states
 localparam IDLE        = 3'd0,
-           GET_BLOCK_A = 3'd1,
-           GET_BLOCK_B = 3'd2,
-           MULTIPLY_BLOCK    = 3'd3,
-           ACCUMULATE   = 3'd4,
-           WRITE_BACK  = 3'd5,
-           DONE        = 3'd6;
+           GET_BLOCKS = 3'd1,
+           MULTIPLY_BLOCK    = 3'd2,
+           ACCUMULATE   = 3'd3,
+           WRITE_BACK  = 3'd4,
+           DONE        = 3'd5;
 
 reg [2:0] state, next_state;
 reg [9:0] i, l, r, result_row, result_col; // this is for the loop counters
@@ -46,7 +45,7 @@ block_get block_get_A(
     .block_get_done(block_get_a_done)
 );
 
-localparam B_cols = 10'd5;
+localparam B_cols = 10'd2;
 localparam B_size = 10'd10;
 
 block_get block_get_B(
@@ -67,8 +66,8 @@ block_add block_add(
     .clk(clk),
     .rst(rst),
     .start(add_block),
-    .start_row(result_row),
-    .start_col(result_col),
+    .start_row(i),
+    .start_col(l),
     .multiplied_block(block_b),
     .buffer_temp(block_a),
     .buffer_result(matrix_C),
@@ -111,21 +110,16 @@ always @(posedge clk or posedge rst) begin
                     get_block_b <= 0;
                     add_block <= 0;
                     operation_complete <= 0;
-                    next_state = GET_BLOCK_A;
+                    next_state = GET_BLOCKS;
                 end
             end
-            GET_BLOCK_A: begin
+            GET_BLOCKS: begin
                 get_block_a <= 1;
-                if (block_get_a_done) begin
-                    get_block_a <= 0;
-                    next_state = GET_BLOCK_B;
-                end
-            end
-            GET_BLOCK_B: begin
                 get_block_b <= 1;
-                if (block_get_b_done) begin
+                if (block_get_a_done && block_get_b_done) begin
+                    get_block_a <= 0;
                     get_block_b <= 0;
-                    next_state = IDLE;
+                    next_state = ACCUMULATE;
                 end
             end
             MULTIPLY_BLOCK: begin
@@ -151,13 +145,13 @@ always @(posedge clk or posedge rst) begin
                             if (i >= `A_M) begin
                                 next_state = DONE;
                             end else begin
-                                next_state = GET_BLOCK_A;
+                                next_state = GET_BLOCKS;
                             end
                         end else begin
-                            next_state = GET_BLOCK_A;
+                            next_state = GET_BLOCKS;
                         end
                     end else begin
-                        next_state = GET_BLOCK_A;
+                        next_state = GET_BLOCKS;
                     end
                 end
             end

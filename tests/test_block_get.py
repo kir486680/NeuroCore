@@ -18,8 +18,8 @@ async def test_get_block(dut):
 
     dut.rst.value = 0
     await RisingEdge(dut.clk)
-    print_matrix(dut.buffer, 2, 5, "Initial Buffer")
-    # # Initialize the buffer with sequential values
+    
+    # Initialize the buffer with sequential values
     for i in range(buffer_size):
         dut.buffer[i].value = BinaryValue(value=float_to_float16(i), n_bits=16)
     print("Initialized data")
