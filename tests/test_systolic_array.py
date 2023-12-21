@@ -115,10 +115,9 @@ async def systolic_array_test(dut):
             # Access the element using the flattened index
             val = dut.shift_registers_last_row[index].value
             print(f"Shift last_row register[{i}][{j}] (Flattened index {index}) = {val}")
-    print_matrix(dut.block_result, ROWS, COLS, "Matrix a after initialization")
     await RisingEdge(dut.clk)
     #Now we have the result and the counter is back to 0
-    print_matrix(dut.block_result, ROWS, COLS, "Matrix a after initialization")
+    print_matrix(dut.block_result, ROWS, COLS, "Final Matrix")
 
     print(dut.counter.value)
     print(dut.block_multiply_done.value)

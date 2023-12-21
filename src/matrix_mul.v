@@ -25,6 +25,7 @@ reg [2:0] state, next_state;
 reg [9:0] i, l, r, result_row, result_col; // this is for the loop counters
 wire [`DATA_W-1:0] block_a[0:`J*`K-1]; // does not work if reg type because because we are feeding this is output to the block
 wire [`DATA_W-1:0] block_b[0:`J*`K-1];
+wire [`DATA_W-1:0] matrix_res[0:`A_M*`B_N-1]; // final result
 wire [`DATA_W-1:0] mul_result[0:`J*`K-1];
 
 // Signals to indicate the completion of operations
@@ -66,17 +67,7 @@ block_get block_get_B(
 );
 
 
-block_add block_add(
-    .clk(clk),
-    .rst(rst),
-    .start(add_block),
-    .start_row(i),
-    .start_col(l),
-    .multiplied_block(block_b),
-    .buffer_temp(block_a),
-    .buffer_result(matrix_C),
-    .block_add_done(block_add_done)
-);
+
 
 systolic_array systolic_array(
     .block_a(block_a),
@@ -85,7 +76,20 @@ systolic_array systolic_array(
     .rst(rst),
     .start(mul_block),
     .load(mul_load),
+    .block_multiply_done(block_multiply_done),
     .block_result(mul_result)
+);
+
+block_add block_add(
+    .clk(clk),
+    .rst(rst),
+    .start(add_block),
+    .start_row(i),
+    .start_col(l),
+    .multiplied_block(mul_result),
+    .buffer_temp(matrix_C),
+    .buffer_result(matrix_res),
+    .block_add_done(block_add_done)
 );
 
 // Synchronous state transition logic
@@ -114,6 +118,10 @@ always @(posedge clk or posedge rst) begin
         mul_block <= 0;
         mul_load <= 0;
         operation_complete <= 0;
+        //set matrix C to 0
+        for (int i = 0; i < `A_M*`B_N; i = i + 1) begin
+            matrix_C[i] <= 0;
+        end
         // Reset other registers if necessary
     end else begin
         case (state)
@@ -137,7 +145,7 @@ always @(posedge clk or posedge rst) begin
                 if (block_get_a_done && block_get_b_done) begin
                     get_block_a <= 0;
                     get_block_b <= 0;
-                    next_state = ACCUMULATE;
+                    next_state = MULTIPLY_BLOCK;
                 end
             end
             MULTIPLY_BLOCK: begin
@@ -146,6 +154,7 @@ always @(posedge clk or posedge rst) begin
             end
             MULTIPLY_WAIT: begin
                 mul_load <= 0;
+                mul_block <= 1;
                 if (block_multiply_done) begin
                     mul_block <= 0;
                     next_state = ACCUMULATE;
@@ -155,6 +164,10 @@ always @(posedge clk or posedge rst) begin
                 add_block <= 1;
                 // Wait for the add operation to complete
                 if (block_add_done) begin
+                    //make matrix_C = matrix_res
+                    for (int i = 0; i < `A_M*`B_N; i = i + 1) begin
+                        matrix_C[i] <= matrix_res[i];
+                    end
                     add_block <= 0;
                     // Update your loop counters here
                     r <= r + `K;

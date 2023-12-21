@@ -10,8 +10,8 @@ async def test_get_block(dut):
     # Set up the initial conditions
     clock = Clock(dut.clk, 20, units="ns")  # 50 MHz clock
     cocotb.fork(clock.start())
-    buffer_size = 10
-    buffer_row_len = 5
+    buffer_size = 4
+    buffer_row_len = 2
     J = 2
     K= 2
     dut.rst.value = 1
@@ -40,11 +40,11 @@ async def test_get_block(dut):
     print_matrix(dut.multiplied_block, J, K, "multiplied_block")
     print_matrix(dut.buffer_temp, buffer_size/buffer_row_len, buffer_row_len, "buffer_temp")
     await RisingEdge(dut.clk)
-    print("Done", dut.block_add_done.value)
-    print_matrix(dut.buffer_result, 2, 5, "added result")
     await RisingEdge(dut.clk)
     print("Done", dut.block_add_done.value)
-
+    await RisingEdge(dut.clk)
+    print("Done", dut.block_add_done.value)
+    print_matrix(dut.buffer_result, 2, 2, "added result")
     # Check the block values
     # for i in range(buffer_size):
     #     print(dut.buffer_result[i].value)

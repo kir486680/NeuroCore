@@ -81,15 +81,15 @@ module systolic_array(
             if (counter == `DATA_W'd5) begin
                 //this is wayyy too manual right now. need to figure out how to do this in a loop
                 block_result[0] <= shift_registers_last_row[2][0];
-                block_result[1] <= shift_registers_last_row[1][1];
-                block_result[2] <= shift_registers_last_row[1][0];
+                block_result[1] <= shift_registers_last_row[1][0];
+                block_result[2] <= shift_registers_last_row[1][1];
                 block_result[3] <= shift_registers_last_row[0][1];
                 counter <= `DATA_W'd0;
                 block_multiply_done <= 1'b1;
-            end else begin
+            end else if(block_multiply_done != 1'b1)begin
                 counter <= counter + 1;
             end
-            $display("counter = %d", counter);
+            //$display("counter = %d", counter);
         end
     end
 
@@ -115,7 +115,7 @@ module systolic_array(
     block P2(
         .inp_north(`DATA_W'd0),
         .inp_west(east_west_wires[0][0]),
-        .weight_in(block_b[1]),
+        .weight_in(block_b[2]),
         .outp_south(north_south_wires[0][1]),
         .outp_east(east_west_wires[0][1]),
         .clk(clk),
@@ -128,7 +128,7 @@ module systolic_array(
     block P3(
         .inp_north(north_south_wires[0][0]),
         .inp_west(shift_registers[1][0]),
-        .weight_in(block_b[2]),
+        .weight_in(block_b[1]),
         .outp_south(north_south_wires[1][0]),
         .outp_east(east_west_wires[1][0]),
         .clk(clk),

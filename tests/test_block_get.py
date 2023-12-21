@@ -1,7 +1,7 @@
 import cocotb
 from cocotb.triggers import RisingEdge
 from cocotb.binary import BinaryValue
-from utils import float_to_float16, print_matrix, binary_to_float16
+from utils import float_to_float16, print_matrix
 from cocotb.clock import Clock
 
 @cocotb.test()

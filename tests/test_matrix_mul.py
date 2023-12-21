@@ -25,6 +25,8 @@ async def test_get_block(dut):
         dut.matrix_A[i].value = BinaryValue(value=float_to_float16(i), n_bits=16)
     for i in range(buffer_size):
         dut.matrix_B[i].value = BinaryValue(value=float_to_float16(i), n_bits=16)
+    for i in range(4):
+        dut.matrix_C[i].value = BinaryValue(value=float_to_float16(0), n_bits=16)
     await RisingEdge(dut.clk)
     print("Initialized data")
     print_matrix(dut.matrix_A, 2, 5, "Matrix A")
@@ -46,11 +48,32 @@ async def test_get_block(dut):
     await RisingEdge(dut.clk)
     print("Current state", dut.state.value)
     print("Start of add", dut.block_add.start.value)
-    print_matrix(dut.block_add.buffer_temp, J, K, "Input to block_add")
-    print_matrix(dut.block_add.multiplied_block, J, K, "Input to block_add")
-    print(dut.block_add_done.value)
+    #print_matrix(dut.block_add.buffer_temp, J, K, "Input to block_add")
+    #print_matrix(dut.block_add.multiplied_block, J, K, "Input to block_add")
     print_matrix(dut.block_add.buffer_result, 2,2, "Matrix C")
     print("i,l,r", dut.i.value, dut.l.value, dut.r.value) 
+    for i in range(8):
+        await RisingEdge(dut.clk)
+        print("Counter", dut.systolic_array.counter.value)
+
+    print_matrix(dut.mul_result, J, K, "Matrix a after mult")
+    print_matrix(dut.block_add.buffer_temp, 2,2, "Buffer Temp")
+    await RisingEdge(dut.clk)
+    #should be in the state of block_add
+    print("Current state", dut.state.value)
+    print_matrix(dut.block_add.buffer_temp, 2,2, "Buffer Temp")
+    print_matrix(dut.matrix_C, 2,2, "Matrix C")
+    await RisingEdge(dut.clk)
+    print("Current state", dut.state.value)
+    print_matrix(dut.block_add.multiplied_block, 2,2, "Multiplied Result")
+    print_matrix(dut.block_add.buffer_temp, 2,2, "Buffer Temp")
+    #print i and l
+    print(dut.add_block.value)
+    await RisingEdge(dut.clk)
+    print("Current state", dut.state.value)
+    print_matrix(dut.matrix_res, J, K, "Resultant Matrix")
+
+
     #here we should be going back to get block
     print("-------------------------")
     await RisingEdge(dut.clk)

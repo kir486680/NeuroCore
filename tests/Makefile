@@ -14,9 +14,9 @@ VERILOG_SOURCES = ../src/define.v \
                   ../src/matrix_mul.v
 
 # You will have to create separate test rules for each module
-TOPLEVEL_LANG = verilog
-#TOPLEVEL = systolic_array
-#MODULE = test_systolic_array
+#TOPLEVEL_LANG = verilog
+#TOPLEVEL = block_add
+MODULE = test_block_add
 TOPLEVEL = matrix_mul
 MODULE = test_matrix_mul
 
