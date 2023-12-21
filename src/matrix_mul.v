@@ -6,6 +6,8 @@ module matrix_mul(
     output reg get_block_a,
     output reg get_block_b,
     output reg add_block,
+    output reg mul_block,
+    output reg mul_load,
     output reg operation_complete,
     output reg [`DATA_W-1:0] matrix_C[0:`A_M*`B_N-1]
 );
@@ -16,18 +18,20 @@ localparam IDLE        = 3'd0,
            MULTIPLY_BLOCK    = 3'd2,
            ACCUMULATE   = 3'd3,
            WRITE_BACK  = 3'd4,
-           DONE        = 3'd5;
+           DONE        = 3'd5,
+           MULTIPLY_WAIT = 3'd6;
 
 reg [2:0] state, next_state;
 reg [9:0] i, l, r, result_row, result_col; // this is for the loop counters
 wire [`DATA_W-1:0] block_a[0:`J*`K-1]; // does not work if reg type because because we are feeding this is output to the block
 wire [`DATA_W-1:0] block_b[0:`J*`K-1];
+wire [`DATA_W-1:0] mul_result[0:`J*`K-1];
 
 // Signals to indicate the completion of operations
-wire block_get_a_done;
-wire block_get_b_done;
-wire block_multiply_done;
-wire block_add_done;
+reg block_get_a_done;
+reg block_get_b_done;
+reg block_multiply_done;
+reg block_add_done;
 
 localparam A_cols = 10'd5;
 localparam A_size = 10'd10;
@@ -74,6 +78,16 @@ block_add block_add(
     .block_add_done(block_add_done)
 );
 
+systolic_array systolic_array(
+    .block_a(block_a),
+    .block_b(block_b),
+    .clk(clk),
+    .rst(rst),
+    .start(mul_block),
+    .load(mul_load),
+    .block_result(mul_result)
+);
+
 // Synchronous state transition logic
 always @(posedge clk or posedge rst) begin
     if (rst) begin
@@ -97,6 +111,8 @@ always @(posedge clk or posedge rst) begin
         get_block_a <= 0;
         get_block_b <= 0;
         add_block <= 0;
+        mul_block <= 0;
+        mul_load <= 0;
         operation_complete <= 0;
         // Reset other registers if necessary
     end else begin
@@ -109,6 +125,8 @@ always @(posedge clk or posedge rst) begin
                     get_block_a <= 0;
                     get_block_b <= 0;
                     add_block <= 0;
+                    mul_block <= 0;
+                    mul_load <= 0;
                     operation_complete <= 0;
                     next_state = GET_BLOCKS;
                 end
@@ -123,11 +141,15 @@ always @(posedge clk or posedge rst) begin
                 end
             end
             MULTIPLY_BLOCK: begin
-                // Trigger the multiply module here and wait for it to complete
-                // Assume you have a signal that indicates when multiply is done
-                // if (multiply_done) begin
-                //     next_state = ACCUMULATE;
-                // end
+                mul_load <= 1;
+                next_state = MULTIPLY_WAIT;
+            end
+            MULTIPLY_WAIT: begin
+                mul_load <= 0;
+                if (block_multiply_done) begin
+                    mul_block <= 0;
+                    next_state = ACCUMULATE;
+                end
             end
             ACCUMULATE: begin
                 add_block <= 1;

@@ -43,6 +43,7 @@ always @(*) begin
         for (i = 0; i < J*K; i = i + 1) begin
             get_complete[i] = 1'b0;
         end
+        block_get_done = 1'b0;
     end
 end
 

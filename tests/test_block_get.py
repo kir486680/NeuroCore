@@ -1,7 +1,7 @@
 import cocotb
 from cocotb.triggers import RisingEdge
 from cocotb.binary import BinaryValue
-from utils import float_to_float16, print_matrix
+from utils import float_to_float16, print_matrix, binary_to_float16
 from cocotb.clock import Clock
 
 @cocotb.test()
@@ -24,8 +24,8 @@ async def test_get_block(dut):
         dut.buffer[i].value = BinaryValue(value=float_to_float16(i), n_bits=16)
     print("Initialized data")
     # Define the start row and column for the block to be read
-    start_row = 0
-    start_col = 0
+    start_row = 1
+    start_col = 2
     num_col = 5
     dut.start_row.value = start_row
     dut.start_col.value = start_col
@@ -43,6 +43,7 @@ async def test_get_block(dut):
     await RisingEdge(dut.clk)
     
     # Check the block values
+    #this check if broken if the index is out of range. 
     for i in range(J):
         for j in range(K):
             original_val_idx = (start_row + i) * num_col + start_col + j

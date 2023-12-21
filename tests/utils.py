@@ -17,7 +17,7 @@ def print_matrix(matrix, rows, cols, title="Matrix"):
         for col in range(cols):
             idx = row * cols + col
             # Assumes binary_to_float16 is a function that converts a binary string to a float16
-            val = binary_to_float16(matrix[idx].value.binstr)
+            val = binary_to_float16(matrix[idx].value)
             print(f"{val:5.2f}", end=" ")
         print()
 
@@ -30,10 +30,12 @@ def float_to_float16(value):
 
 def binary_to_float16(value):
     try:
+        value = value.binstr
+        int_value = int(value, 2) #convert cocotb binary value to binary string 
         # Convert binary string to numpy float16
-        float16 = np.float16(np.uint16(int(value, 2)).view(np.float16))
+        float16 = np.frombuffer(np.array([int_value], dtype=np.uint16).tobytes(), dtype=np.float16)[0]
         # Convert to Python float
-        return float(float16)
+        return float16
     except ValueError:
         # If the value is not a binary string, return the original value
         return float('nan')
