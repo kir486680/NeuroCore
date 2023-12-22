@@ -2,70 +2,122 @@ import cocotb
 from cocotb.triggers import RisingEdge, Timer
 from cocotb.clock import Clock
 from cocotb.binary import BinaryValue
+from utils import float_to_float16, print_matrix, binary_to_float16
 
 @cocotb.test()
 async def systolic_array_test(dut):
     # Clock generation
     clock = Clock(dut.clk, 20, units="ns")  # 50 MHz clock
-    cocotb.fork(clock.start())
+    cocotb.start_soon(clock.start())
 
     # Initialize Inputs
     dut.rst.value = 1
-    dut.compute.value = 0
-    dut.weight_en.value = 0
+
+    ROWS = 2
+    COLS = 2
+    a_size = ROWS * COLS
 
     # Reset the system
-    await Timer(100, units="ns")
+    await RisingEdge(dut.clk)
     dut.rst.value = 0
-    
-    # Load the weight matrix
-    dut.weight_en.value = 1
-    dut.inp_weight0.value = BinaryValue("00111111100000000000000000000000")  # 1
-    dut.inp_weight1.value = BinaryValue("01000000000000000000000000000000")  # 2
-    dut.inp_weight2.value = BinaryValue("01000000010000000000000000000000")  # 3
-    dut.inp_weight3.value = BinaryValue("01000000100000000000000000000000")  # 4
-    dut.inp_weight4.value = BinaryValue("01000000101000000000000000000000")  # 5
-    dut.inp_weight5.value = BinaryValue("01000000110000000000000000000000")  # 6
-    dut.inp_weight6.value = BinaryValue("01000000111000000000000000000000")  # 7
-    dut.inp_weight7.value = BinaryValue("01000001000000000000000000000000")  # 8
-    dut.inp_weight8.value = BinaryValue("01000001000100000000000000000000")  # 9
-    await Timer(20, units="ns")
-    dut.weight_en.value = 0  # Disable weight loading
+    for i in range(a_size):
+        dut.block_a[i].value = BinaryValue(value=float_to_float16(i+1), n_bits=16)
+    for i in range(a_size):
+            dut.block_b[i].value = BinaryValue(value=float_to_float16(i+1), n_bits=16)
+    await RisingEdge(dut.clk)
+    print_matrix(dut.block_a, ROWS, COLS, "Matrix a after initialization")
+    print_matrix(dut.block_b, ROWS, COLS, "Matrix a after initialization")
+    for i in range(ROWS):
+        for j in range((COLS + ROWS) -1):
+            # Calculate the flattened index
+            index = i * (COLS + ROWS) + j
+            # Access the element using the flattened index
+            val = dut.shift_registers[index].value
+            print(f"Shift register[{i}][{j}] (Flattened index {index}) = {val}")
+    await RisingEdge(dut.clk)
+    dut.load = 1
+    await RisingEdge(dut.clk)
+    dut.load = 0
+    dut.start = 1
+    await RisingEdge(dut.clk)
+    #cycle 1 
+    print("Cycle 0")
+    for i in range(ROWS):
+        for j in range((COLS + ROWS) -1):
+            # Calculate the flattened index
+            index = i * (COLS + ROWS) + j
+            # Access the element using the flattened index
+            val = dut.shift_registers[index].value
+            print(f"Shift register[{i}][{j}] (Flattened index {index}) = {val}")
+    print("P1", dut.P1.inp_west.value, dut.P1.inp_north.value, dut.P1.outp_east.value, dut.P1.outp_south.value)
+    print("P2", dut.P2.inp_west.value, dut.P2.inp_north.value, dut.P2.outp_east.value, dut.P2.outp_south.value)
+    print("P3", dut.P3.inp_west.value, dut.P3.inp_north.value, dut.P3.outp_east.value, dut.P3.outp_south.value)
+    print("P4", dut.P4.inp_west.value, dut.P4.inp_north.value, dut.P4.outp_east.value, dut.P4.outp_south.value)
+    print(dut.P1.weight)
+    print(dut.P1.inp_west)
+    await RisingEdge(dut.clk)
+    print("Cycle 1")
+    print(dut.P1.outp_east)
+    for i in range(ROWS):
+        for j in range((COLS + ROWS) -1):
+            # Calculate the flattened index
+            index = i * (COLS + ROWS) + j
+            # Access the element using the flattened index
+            val = dut.shift_registers[index].value
+            print(f"Shift register[{i}][{j}] (Flattened index {index}) = {val}")
+    print("P1", dut.P1.inp_west.value, dut.P1.inp_north.value, dut.P1.outp_east.value, dut.P1.outp_south.value)
+    print("P2", dut.P2.inp_west.value, dut.P2.inp_north.value, dut.P2.outp_east.value, dut.P2.outp_south.value)
+    print("P3", dut.P3.inp_west.value, dut.P3.inp_north.value, dut.P3.outp_east.value, dut.P3.outp_south.value)
+    print("P4", dut.P4.inp_west.value, dut.P4.inp_north.value, dut.P4.outp_east.value, dut.P4.outp_south.value)
+    await RisingEdge(dut.clk)
+    print("Cycle 3")
+    print("P1", dut.P1.inp_west.value, dut.P1.inp_north.value, dut.P1.outp_east.value, dut.P1.outp_south.value)
+    print("P2", dut.P2.inp_west.value, dut.P2.inp_north.value, dut.P2.outp_east.value, dut.P2.outp_south.value)
+    print("P3", dut.P3.inp_west.value, dut.P3.inp_north.value, dut.P3.outp_east.value, dut.P3.outp_south.value)
+    print("P4", dut.P4.inp_west.value, dut.P4.inp_north.value, dut.P4.outp_east.value, dut.P4.outp_south.value)
+    # printing the last row of the north_south_wires
+    for i in range(COLS):
+        val = dut.north_south_wires_last_row[i].value
+        val = binary_to_float16(val)
+        print(f"North-South last row wire[{i}] = {val}")
+    await RisingEdge(dut.clk)
+    print("Cycle 4")
+    print("P1", dut.P1.inp_west.value, dut.P1.inp_north.value, dut.P1.outp_east.value, dut.P1.outp_south.value)
+    print("P2", dut.P2.inp_west.value, dut.P2.inp_north.value, dut.P2.outp_east.value, dut.P2.outp_south.value)
+    print("P3", dut.P3.inp_west.value, dut.P3.inp_north.value, dut.P3.outp_east.value, dut.P3.outp_south.value)
+    print("P4", dut.P4.inp_west.value, dut.P4.inp_north.value, dut.P4.outp_east.value, dut.P4.outp_south.value)
+    for i in range(COLS):
+        val = dut.north_south_wires_last_row[i].value
+        val = binary_to_float16(val)
+        print(f"North-South last row wire[{i}] = {val}")
+    await RisingEdge(dut.clk)
+    print("Cycle 5")
+    for i in range(COLS):
+        val = dut.north_south_wires_last_row[i].value
+        val = binary_to_float16(val)
+        print(f"North-South last row wire[{i}] = {val}")
+    for i in range(ROWS + ROWS -1):
+        for j in range(COLS):
+            # Calculate the flattened index
+            index = i * COLS + j
+   
+            # Access the element using the flattened index
+            val = dut.shift_registers_last_row[index].value
+            print(f"Shift last_row register[{i}][{j}] (Flattened index {index}) = {val}")
+    await RisingEdge(dut.clk)
+    print("Cycle 6")
+    print(dut.counter.value)
+    for i in range(ROWS + ROWS -1):
+        for j in range(COLS):
+            # Calculate the flattened index
+            index = i * COLS + j
+   
+            # Access the element using the flattened index
+            val = dut.shift_registers_last_row[index].value
+            print(f"Shift last_row register[{i}][{j}] (Flattened index {index}) = {val}")
+    await RisingEdge(dut.clk)
+    #Now we have the result and the counter is back to 0
+    print_matrix(dut.block_result, ROWS, COLS, "Final Matrix")
 
-    # Input activation matrix
-    dut.inp_west0.value = BinaryValue("00111111100000000000000000000000")  # 1
-    dut.inp_west3.value = BinaryValue("00000000000000000000000000000000")  # 0
-    dut.inp_west6.value = BinaryValue("00000000000000000000000000000000")  # 0
-    dut.compute.value = 1  # Start computation
-    await Timer(20, units="ns")
-
-    # Continuing the input activation matrix sequence
-    dut.inp_west0.value = BinaryValue("01000000100000000000000000000000")
-    dut.inp_west3.value = BinaryValue("01000000000000000000000000000000")
-    dut.inp_west6.value = BinaryValue("00000000000000000000000000000000")
-    await Timer(20, units="ns")
-
-    dut.inp_west0.value = BinaryValue("01000000111000000000000000000000")
-    dut.inp_west3.value = BinaryValue("01000000101000000000000000000000")
-    dut.inp_west6.value = BinaryValue("01000000010000000000000000000000")
-    await Timer(20, units="ns")
-
-    dut.inp_west0.value = BinaryValue("00000000000000000000000000000000")
-    dut.inp_west3.value = BinaryValue("01000001000000000000000000000000")
-    dut.inp_west6.value = BinaryValue("01000000110000000000000000000000")
-    await Timer(20, units="ns")
-
-    dut.inp_west0.value = BinaryValue("00000000000000000000000000000000")
-    dut.inp_west3.value = BinaryValue("00000000000000000000000000000000")
-    dut.inp_west6.value = BinaryValue("01000001000100000000000000000000")
-    await Timer(20, units="ns")
-
-    # Observe the output for a few cycles
-    # Note: Need additional logic to read out the final results from the array
-    # This can involve checking the output signals of the systolic array
-    # For example: assert dut.output_signal.value == expected_value, "Mismatch in output"
-    await Timer(100, units="ns")
-
-    # Stop computation
-    dut.compute.value = 0
-    await Timer(20, units="ns")
+    print(dut.counter.value)
+    print(dut.block_multiply_done.value)

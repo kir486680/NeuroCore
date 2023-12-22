@@ -9,6 +9,8 @@ My goal is to submit this to GFMPW-1. Otherwise, I will try to submit this to Ti
 
 # TODO
 
+- [ ] Implement a state machine to handle data loading, processing, etc...
+- [ ] Implement a block matrix multiplier
 - [ ] Make a comprehensive testing suite for the multiplier and adder
 - [ ] Make a comprehensive testing suite for the systolic array
 - [ ] Think about the memory chache architecture
