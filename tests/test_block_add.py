@@ -21,12 +21,18 @@ async def test_get_block(dut):
     await RisingEdge(dut.clk)
     for i in range(J*K):
             dut.multiplied_block[i].value = BinaryValue(value=float_to_float16(i+1), n_bits=16)
-    
+    dut.multiplied_block[0].value = BinaryValue(value=float_to_float16(113), n_bits=16)
+    dut.multiplied_block[1].value = BinaryValue(value=float_to_float16(62), n_bits=16)
+    dut.multiplied_block[2].value = BinaryValue(value=float_to_float16(35), n_bits=16)
+    dut.multiplied_block[3].value = BinaryValue(value=float_to_float16(20), n_bits=16)
     
     # Initialize the buffer with sequential values
     for i in range(buffer_size):
         dut.buffer_temp[i].value = BinaryValue(value=float_to_float16(i), n_bits=16)
-
+    dut.buffer_temp[0].value = BinaryValue(value=float_to_float16(5), n_bits=16)
+    dut.buffer_temp[1].value = BinaryValue(value=float_to_float16(6), n_bits=16)
+    dut.buffer_temp[2].value = BinaryValue(value=float_to_float16(15), n_bits=16)
+    dut.buffer_temp[3].value = BinaryValue(value=float_to_float16(20), n_bits=16)
     # Define the start row and column for the block to be read
     start_row = 0
     start_col = 0

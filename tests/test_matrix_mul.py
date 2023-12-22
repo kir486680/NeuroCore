@@ -50,8 +50,7 @@ async def test_get_block(dut):
     print("Start of add", dut.block_add.start.value)
     #print_matrix(dut.block_add.buffer_temp, J, K, "Input to block_add")
     #print_matrix(dut.block_add.multiplied_block, J, K, "Input to block_add")
-    print_matrix(dut.block_add.buffer_result, 2,2, "Matrix C")
-    print("i,l,r", dut.i.value, dut.l.value, dut.r.value) 
+    print_matrix(dut.block_add.buffer_result, 2,2, "Matrix C") 
     for i in range(8):
         await RisingEdge(dut.clk)
         print("Counter", dut.systolic_array.counter.value)
@@ -66,13 +65,16 @@ async def test_get_block(dut):
     await RisingEdge(dut.clk)
     print("Current state", dut.state.value)
     print_matrix(dut.block_add.multiplied_block, 2,2, "Multiplied Result")
-    print_matrix(dut.block_add.buffer_temp, 2,2, "Buffer Temp")
-    #print i and l
     print(dut.add_block.value)
     await RisingEdge(dut.clk)
     print("Current state", dut.state.value)
     print_matrix(dut.matrix_res, J, K, "Resultant Matrix")
-
+    await RisingEdge(dut.clk)
+    print("Current state", dut.state.value)
+    await RisingEdge(dut.clk)
+    print("Current state", dut.state.value)
+    await RisingEdge(dut.clk)
+    print("Current state", dut.state.value)
 
     #here we should be going back to get block
     print("-------------------------")
@@ -99,6 +101,18 @@ async def test_get_block(dut):
     await RisingEdge(dut.clk)
     print("Current state", dut.state.value) 
     print("i,l,r", dut.i.value, dut.l.value, dut.r.value) 
-    print("Next state", dut.next_state.value)  
+    print("Next state", dut.next_state.value) 
+    await RisingEdge(dut.clk)
+    print("Current state", dut.state.value)
+    for i in range(8):
+        await RisingEdge(dut.clk)
+        print("Counter", dut.systolic_array.counter.value) 
+    print_matrix(dut.mul_result, J, K, "Matrix a after mult")
+    print_matrix(dut.matrix_C, J, K, "matrix C")
+    await RisingEdge(dut.clk)
+    print("Current state", dut.state.value)
+    await RisingEdge(dut.clk)
+    print("Current state", dut.state.value)
+    print_matrix(dut.matrix_C, J, K, "Resultant Matrix")
 
     

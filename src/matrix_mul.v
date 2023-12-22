@@ -140,6 +140,7 @@ always @(posedge clk or posedge rst) begin
                 end
             end
             GET_BLOCKS: begin
+
                 get_block_a <= 1;
                 get_block_b <= 1;
                 if (block_get_a_done && block_get_b_done) begin
@@ -163,12 +164,21 @@ always @(posedge clk or posedge rst) begin
             ACCUMULATE: begin
                 add_block <= 1;
                 // Wait for the add operation to complete
+                //display matrix C and matrix res
+                for (int i = 0; i < `A_M*`B_N; i = i + 1) begin
+                    $display("matrix_C[%d] = %d", i, matrix_C[i]);
+                    $display("matrix_res[%d] = %d", i, matrix_res[i]);
+                end
                 if (block_add_done) begin
+                    //the reason this is not a blocking statement is because somehow the next for loop which makes matrix_C = matrix_res would make matrix_C= matrix_res before add_block becomes 0, 
+                    //which would make matrix_res = 2 * matrix_C and not add the actual two matrices. However this might be fixed during actual synthesis.
+                    add_block = 0;
                     //make matrix_C = matrix_res
                     for (int i = 0; i < `A_M*`B_N; i = i + 1) begin
                         matrix_C[i] <= matrix_res[i];
+                        $display("matrix_C[%d] = %d", i, matrix_C[i]);
                     end
-                    add_block <= 0;
+                    
                     // Update your loop counters here
                     r <= r + `K;
                     if (r >= `A_P) begin
