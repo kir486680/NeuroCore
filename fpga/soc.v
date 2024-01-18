@@ -1,6 +1,5 @@
 `default_nettype none
 `include "uart.v"
-`include "ClockDiv.v"
 `include "define.v"
 `include "systolic_array.v"
 module SOC (
@@ -15,6 +14,7 @@ module SOC (
 
     wire [4:0] count;
     reg [`DATA_W-1:0] block_a1, block_a2, block_a3, block_a4, block_b1, block_b2, block_b3, block_b4;
+
     wire [`DATA_W-1:0] block_result1, block_result2, block_result3, block_result4;
     reg start, load;
     wire block_multiply_done;
@@ -43,33 +43,37 @@ module SOC (
     // assign LEDS[3:1] = current_mul_state;
     //assign LEDS[4] = block_multiply_done;
     assign LEDS[2:0] = current_mul_state;
-    assign LEDS[4] = state_receive == LAST_RECEIVE ? 1 : 0;
+    assign LEDS[4] = state_receive == DONE_RECEIVE ? 1 : 0;
      reg send_data =0;
 
      localparam IDLE_MUL = 0, LOAD = 1, START = 2, DONE_MUL = 3;
      reg [2:0] current_mul_state = IDLE_MUL;
      reg [2:0] next_mul_state = IDLE_MUL;
      
-     // Update current_mul_state and send_data in a single always block
+// Update current_mul_state and send_data in a single always block
      always @(posedge CLK) begin
-         if (!RESET) begin
-             current_mul_state <= IDLE_MUL;
-
-
-         end
-         else begin
-             current_mul_state <= next_mul_state;
-
-         end
-         
-     end
+        if (!RESET) begin
+            current_mul_state <= IDLE_MUL;
+            send_data <= 0;  // Reset send_data on RESET
+        end
+        else begin
+            current_mul_state <= next_mul_state;
+            // Update send_data only in the sequential block
+            if (current_mul_state == START && block_multiply_done) begin
+                send_data <= 1;
+            end
+            else if(send_data == DONE_SEND)begin
+                send_data <= 0;
+            end
+        end
+    end
      
      // Calculate next state and send_data based on current state and inputs
      always @(*) begin
         next_mul_state = IDLE_MUL;
          case (current_mul_state)
              IDLE_MUL: begin
-                 if (state_receive == LAST_RECEIVE) begin
+                 if (state_receive == DONE_RECEIVE) begin
                      next_mul_state = LOAD;
                  end else begin
                      next_mul_state = IDLE_MUL;
@@ -87,7 +91,7 @@ module SOC (
                     start = 1;
                  if (block_multiply_done) begin 
                      next_mul_state = DONE_MUL;
-                     send_data = 1;
+                     //send_data = 1;
                  end else
                      next_mul_state = START;
                  // Other START state logic
@@ -99,30 +103,6 @@ module SOC (
              default: next_mul_state = IDLE_MUL;
          endcase
      end
-     //assign LEDS[4:1] = block_multiply_done;
-    // always @(posedge CLK) begin
-    //     case (current_mul_state)
-
-    //         LOAD: begin
-    //             start <= 0;
-    //             load <= 1;
-    //             //current_mul_state <= START;
-    //         end
-    //         START: begin
-    //             start <= 1;
-    //             load <= 0;
-    //             if (block_multiply_done) begin
-    //                 current_mul_state <= DONE_MUL;
-    //             end
-    //             else begin
-    //                 current_mul_state <= START;
-    //             end
-    //         end
-    //         DONE_MUL: begin
-
-    //         end
-    //     endcase
-    // end
 
 
 // UART stuff 
@@ -130,7 +110,7 @@ module SOC (
     wire       rx_ready;
     wire       rx_ack;
     wire       rx_error;
-    wire [7:0] tx_data;
+    reg [7:0] tx_data;
     wire       tx_ready;
     wire       tx_ack;
     UART #(
@@ -162,7 +142,7 @@ module SOC (
     RECEIVE_BR6_HIGH = 11, RECEIVE_BR6_LOW = 12,
     RECEIVE_BR7_HIGH = 13, RECEIVE_BR7_LOW = 14,
     RECEIVE_BR8_HIGH = 15, RECEIVE_BR8_LOW = 16,
-    LAST_RECEIVE = 17, DONE_RECEIVE = 18;
+    DONE_RECEIVE = 17, DONE_RECEIVE = 18;
     //now need to keep track of the state of the data that is being received
     reg [5:0] state_receive = IDLE;
    
@@ -186,6 +166,7 @@ module SOC (
                 if (rx_data == 8'b11111110) begin
                     data_processed <= 1'b1;
                     state_receive <= RECEIVE_BR1_HIGH;
+                 
                 end
             end
             RECEIVE_BR1_HIGH: begin
@@ -266,14 +247,15 @@ module SOC (
             RECEIVE_BR8_LOW: begin
                 block_b4[7:0] <= rx_data;
                 data_processed <= 1'b1;
-                state_receive <= LAST_RECEIVE;
+                state_receive <= DONE_RECEIVE;
                 
             end
-            LAST_RECEIVE: begin
+            DONE_RECEIVE: begin
            
                 if (rx_data == 8'b11111111) begin
                     state_receive <= IDLE;
                     data_processed <= 1'b1;
+                 
                     
                     
                     //check if blocka1, blocka2, blocka3, blocka4 are all 0, if so, then light up LEDS[0]
@@ -288,10 +270,6 @@ module SOC (
         endcase
         end
     end
-         // Assuming data_processed is set once you're done processing
-        //LEDS <= received_data; // Display the received data on the LEDs
-
-
         // Once data is processed, reset the flag
         if (data_processed) begin // Assuming data_processed is set once you're done processing
             data_received <= 1'b0;
@@ -302,14 +280,6 @@ module SOC (
 // Acknowledge reception to UART module
     assign rx_ack = rx_ready && !data_received;
 
-    //assign LEDS = {rx_data[4:0]};
-    
-
-
-
-    // /* Increment ASCII digit and blink LED */
-    reg [15:0] float = 16'b0100011101001000;
-
 
     reg [7:0] data_to_send = 8'h00;
     reg data_available = 1'b0;
@@ -318,78 +288,75 @@ module SOC (
     localparam IDLE_SEND = 0, SEND_BR1_HIGH = 1, SEND_BR1_LOW = 2, 
     SEND_BR2_HIGH = 3, SEND_BR2_LOW = 4, 
     SEND_BR3_HIGH = 5, SEND_BR3_LOW = 6,
-    SEND_BR4_HIGH = 7, SEND_BR4_LOW = 8, DONE = 9;
+    SEND_BR4_HIGH = 7, SEND_BR4_LOW = 8, DONE_SEND = 9;
 
-    reg [3:0] state = IDLE_SEND;
+    reg [3:0] send_state = IDLE_SEND;
 
 
+    //Assign LEDS[3]  to 1 if the send_staet is IDLE_SEND
+    assign LEDS[3] = send_data;
     always @(posedge CLK) begin
         if(!RESET) begin
             data_to_send <= 8'h00;
             data_available <= 1'b0;
-            state <= IDLE_SEND;
+            send_state <= IDLE_SEND;
         end
         else begin
- 
+
+            
+
+
         if(send_data) begin
         if (!data_available && tx_ack && received_data == 8'b11111111) begin
             // Load new data to send
             data_available <= 1'b1;
-
-            //implement the state machine here which will basically do 
-            //data_to_send <= float[15:8]; // or float[7:0] depending on your logic
-            //data_available <= 1'b1;
             
-            case (state)
+            case (send_state)
                 IDLE_SEND: begin
                     tx_data <= 8'b11111110;
-                    state <= SEND_BR1_HIGH;
+                    send_state <= SEND_BR1_HIGH;
                 end
                 SEND_BR1_HIGH: begin
                     tx_data <= block_result1[15:8];
-                    state <= SEND_BR1_LOW;
+                    send_state <= SEND_BR1_LOW;
                 end
                 SEND_BR1_LOW: begin
                     tx_data <= block_result1[7:0];
-                    state <= SEND_BR2_HIGH;
+                    send_state <= SEND_BR2_HIGH;
                 end
                 SEND_BR2_HIGH: begin
                     tx_data <= block_result2[15:8];
-                    state <= SEND_BR2_LOW;
+                    send_state <= SEND_BR2_LOW;
                 end
                 SEND_BR2_LOW: begin
                     tx_data <= block_result2[7:0];
-                    state <= SEND_BR3_HIGH;
+                    send_state <= SEND_BR3_HIGH;
                 end
                 SEND_BR3_HIGH: begin
                     tx_data <= block_result3[15:8];
-                    state <= SEND_BR3_LOW;
+                    send_state <= SEND_BR3_LOW;
                 end
                 SEND_BR3_LOW: begin
                     tx_data <= block_result3[7:0];
-                    state <= SEND_BR4_HIGH;
+                    send_state <= SEND_BR4_HIGH;
                 end
                 SEND_BR4_HIGH: begin
                     tx_data <= block_result4[15:8];
-                    state <= SEND_BR4_LOW;
+                    send_state <= SEND_BR4_LOW;
                 end
                 SEND_BR4_LOW: begin
                     tx_data <= block_result4[7:0];
-                    state <= DONE;
+                    send_state <= DONE_SEND;
                 end
-                DONE: begin
+                DONE_SEND: begin
                     tx_data <= 8'b11111111;
-                    state <= IDLE;
-                    send_data <= 0;
+                    send_state <= IDLE_SEND;
                 end
             endcase
 
         end
         else if (tx_ready && data_available) begin
-            // Once data is loaded and UART is ready, send it
-            //tx_data <= data_to_send;
             data_available <= 1'b0; // Reset to load next data chunk
-
         end
     end
     end
